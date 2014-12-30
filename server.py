@@ -175,11 +175,12 @@ class TcpServer(Thread):
                 rooms = []
                 for id_room, room in self.rooms.rooms.items():
                     rooms.append({"id": id_room,
+                                  "name": room.name,
                                   "nb_players": len(room.players),
                                   "capacity": room.capacity})
                 client.send_tcp(True, rooms, sock)
             elif action == "create":
-                room_identifier = self.rooms.create()
+                room_identifier = self.rooms.create(payload)
                 self.rooms.join(client.identifier, room_identifier)
                 client.send_tcp(True, room_identifier, sock)
             elif action == 'leave':

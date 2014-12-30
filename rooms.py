@@ -55,9 +55,11 @@ class Rooms:
         else:
             raise RoomNotFound()
 
-    def create(self):
+    def create(self, room_name=None):
         identifier = str(uuid.uuid4())
-        self.rooms[identifier] = Room(identifier, self.room_capacity)
+        self.rooms[identifier] = Room(identifier,
+                                      self.room_capacity,
+                                      room_name)
         return identifier
 
     def remove_empty(self):
@@ -80,10 +82,14 @@ class Rooms:
 
 class Room:
 
-    def __init__(self, identifier, capacity):
+    def __init__(self, identifier, capacity, room_name):
         self.capacity = capacity
         self.players = []
         self.identifier = identifier
+        if room_name is not None:
+            self.name = room_name
+        else:
+            self.name = self.identifier
 
     def join(self, player):
         if not self.is_full():

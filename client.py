@@ -24,8 +24,9 @@ class Client:
 
         self.register()
 
-    def create_room(self):
+    def create_room(self, room_name=None):
         message = json.dumps({"action": "create",
+                              "payload": room_name,
                               "identifier": self.identifier})
         self.sock_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock_tcp.connect(self.server_tcp)
@@ -149,7 +150,7 @@ if __name__ == "__main__":
     print "Client 3 : %s" % client3.identifier
 
     #  Create a room on server
-    client1.create_room()
+    client1.create_room("Test room")
     print "Client1 create room  %s" % client1.room_id
 
     #  Get rooms list
@@ -157,7 +158,7 @@ if __name__ == "__main__":
     selected_room = None
     if rooms is not None and len(rooms) != 0:
         for room in rooms:
-            print "Room %s (%d/%d)" % (room["id"],
+            print "Room %s (%d/%d)" % (room["name"],
                                        int(room["nb_players"]),
                                        int(room["capacity"]))
 
