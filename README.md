@@ -32,7 +32,7 @@ rooms = client.get_rooms()
 # You can join a room using room identifier (ex: first room)
 client.join(rooms[0]["id"])
 
-# Or you can create a new room with client.create_room()
+# Or you can create a new room with client.create_room("room_name")
 
 # In your game main loop
 while game_is_running:
