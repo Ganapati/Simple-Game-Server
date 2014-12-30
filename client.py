@@ -110,7 +110,7 @@ class Client:
         except ValueError:
             print data
 
-    def get_signal(self):
+    def get_messages(self):
         message = self.server_message
         self.server_message = []
         return set(message)
@@ -187,7 +187,7 @@ if __name__ == "__main__":
                            "message": "I love emacs"})
 
         # get server data (only client 3)
-        message = client1.get_signal()
+        message = client1.get_messages()
         if len(message) != 0:
             for message in message:
                 message = json.loads(message)
