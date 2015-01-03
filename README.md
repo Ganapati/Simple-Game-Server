@@ -25,14 +25,14 @@ How to add multiplayer in your games
 Start server :
 
 ```python
-user@server >>> ./server.py
+user@server >>> ./python server.py --tcpport 1234 --udpport 1234 --capacity 10
 ```
 
 In the client code :
 
 ```python
 # Add Client instance to your game
-client = Client(server_host, 1234, 1234, 1235)
+client = Client("127.0.0.1", 1234, 1234, 1235)
 
 # Get room list (room_id, nb_players, capacity)
 rooms = client.get_rooms()
@@ -45,15 +45,18 @@ client.join(rooms[0]["id"])
 
 # In your game main loop
 while game_is_running:
+    # Data to send
+    data = {"foo": "bar", "baz": "gu"}
+
     # Send data to all players in the room
-    client.send(any_serializable_data)
+    client.send(data)
   
     # Send data to one player in the room
-    client.sendto(player_id, any_serializable_data)
+    client.sendto(someone.identifier, data)
 
     # Send data to multiple players in room
-    players_id = [player1_identifier, player2_identifier]
-    client.sendto(players_ids, any_serializable_data)
+    players_ids = [player1.identifier, player2.identifier]
+    client.sendto(players_ids, data)
 
     # Read received messages
     messages = client.get_messages()
