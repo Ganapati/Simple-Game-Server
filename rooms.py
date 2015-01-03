@@ -5,12 +5,17 @@ from player import Player
 class Rooms:
 
     def __init__(self, capacity=2):
+        """
+        Handle rooms and set maximum rooms capacity
+        """
         self.rooms = {}
         self.players = {}
         self.room_capacity = capacity
 
     def register(self, addr, udp_port):
-
+        """
+        Register player
+        """
         player = None
         for registered_player in self.players.values():
             if registered_player.addr == addr:
@@ -25,7 +30,9 @@ class Rooms:
         return player
 
     def join(self, player_identifier, room_id=None):
-
+        """
+        Add player to room
+        """
         if player_identifier not in self.players:
             raise ClientNotRegistered()
 
@@ -44,7 +51,9 @@ class Rooms:
             raise RoomNotFound()
 
     def leave(self, player_identifier, room_id):
-
+        """
+        Remove a player from a room
+        """
         if player_identifier not in self.players:
             raise ClientNotRegistered()
 
@@ -56,6 +65,9 @@ class Rooms:
             raise RoomNotFound()
 
     def create(self, room_name=None):
+        """
+        Create a new room
+        """
         identifier = str(uuid.uuid4())
         self.rooms[identifier] = Room(identifier,
                                       self.room_capacity,
@@ -63,11 +75,17 @@ class Rooms:
         return identifier
 
     def remove_empty(self):
+        """
+        Delete empty rooms
+        """
         for room_id in self.rooms.keys():
             if self.rooms[room_id].is_empty():
                 del self.rooms[room_id]
 
     def send(self, identifier, room_id, message, sock):
+        """
+        Send data to all players in room, except sender
+        """
         if room_id not in self.rooms:
             raise RoomNotFound()
 
@@ -80,6 +98,9 @@ class Rooms:
                 player.send_udp(identifier, message)
 
     def sendto(self, identifier, room_id, recipients, message, sock):
+        """
+        Send data to specific player(s)
+        """
         if room_id not in self.rooms:
             raise RoomNotFound()
 
@@ -98,6 +119,9 @@ class Rooms:
 class Room:
 
     def __init__(self, identifier, capacity, room_name):
+        """
+        Create a new room on server
+        """
         self.capacity = capacity
         self.players = []
         self.identifier = identifier
@@ -107,30 +131,45 @@ class Room:
             self.name = self.identifier
 
     def join(self, player):
+        """
+        Add player to room
+        """
         if not self.is_full():
             self.players.append(player)
         else:
             raise RoomFull()
 
     def leave(self, player):
+        """
+        Remove player from room
+        """
         if player in self.players:
             self.players.remove(player)
         else:
             raise NotInRoom()
 
     def is_empty(self):
+        """
+        Check if room is empty or not
+        """
         if len(self.players) == 0:
             return True
         else:
             return False
 
     def is_full(self):
+        """
+        Check if room is full or not
+        """
         if len(self.players) == self.capacity:
             return True
         else:
             return False
 
     def is_in_room(self, player_identifier):
+        """
+        Check if player is in room
+        """
         in_room = False
         for player in self.players:
             if player.identifier == player_identifier:

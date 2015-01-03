@@ -9,6 +9,9 @@ from rooms import Rooms, RoomNotFound, NotInRoom, RoomFull
 
 
 def main_loop(tcp_port, udp_port, rooms):
+    """
+    Start udp and tcp server threads
+    """
     lock = Lock()
     udp_server = UdpServer(udp_port, rooms, lock)
     tcp_server = TcpServer(tcp_port, rooms, lock)
@@ -18,6 +21,9 @@ def main_loop(tcp_port, udp_port, rooms):
 
 class UdpServer(Thread):
     def __init__(self, udp_port, rooms, lock):
+        """
+        Create a new udp server
+        """
         Thread.__init__(self)
         self.rooms = rooms
         self.lock = lock
@@ -25,6 +31,9 @@ class UdpServer(Thread):
         self.msg = '{"success": %(success)s, "message":"%(message)s"}'
 
     def run(self):
+        """
+        Start udp server
+        """
         sock = socket.socket(socket.AF_INET,
                              socket.SOCK_DGRAM)
         sock.bind(("0.0.0.0", self.udp_port))
@@ -79,11 +88,17 @@ class UdpServer(Thread):
                 print "Message from %s:%s is not a valid json string" % addr
 
     def stop(self):
+        """
+        Stop server
+        """
         pass
 
 
 class TcpServer(Thread):
     def __init__(self, tcp_port, rooms, lock):
+        """
+        Create a new tcp server
+        """
         Thread.__init__(self)
         self.lock = lock
         self.tcp_port = int(tcp_port)
@@ -91,6 +106,9 @@ class TcpServer(Thread):
         self.msg = '{"success": "%(success)s", "message":"%(message)s"}'
 
     def run(self):
+        """
+        Start tcp server
+        """
         sock = socket.socket(socket.AF_INET,
                              socket.SOCK_STREAM)
         sock.bind(('0.0.0.0', self.tcp_port))
@@ -152,7 +170,9 @@ class TcpServer(Thread):
               payload,
               identifier=None,
               room_id=None):
-
+        """
+        Route received data for processing
+        """
         if action == "register":
             client = self.rooms.register(addr, int(payload))
             client.send_tcp(True, client.identifier, sock)
@@ -210,10 +230,16 @@ class TcpServer(Thread):
                                           "message": "You must register"})
 
     def stop(self):
+        """
+        Stop tcp data
+        """
         pass
 
 
 if __name__ == "__main__":
+    """
+    Start a game server
+    """
     parser = argparse.ArgumentParser(description='Simple game server')
     parser.add_argument('--tcpport',
                         dest='tcp_port',

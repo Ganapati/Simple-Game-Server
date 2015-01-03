@@ -10,6 +10,9 @@ class Client:
                  server_port_tcp=1234,
                  server_port_udp=1234,
                  client_port_udp=1235):
+        """
+        Create a game server client
+        """
         self.identifier = None
         self.server_message = []
         self.room_id = None
@@ -25,6 +28,9 @@ class Client:
         self.register()
 
     def create_room(self, room_name=None):
+        """
+        Create a new room on server
+        """
         message = json.dumps({"action": "create",
                               "payload": room_name,
                               "identifier": self.identifier})
@@ -37,6 +43,9 @@ class Client:
         self.room_id = message
 
     def join_room(self, room_id):
+        """
+        Join an existing room
+        """
         self.room_id = room_id
         message = json.dumps({"action": "join",
                               "payload": room_id,
@@ -50,6 +59,9 @@ class Client:
         self.room_id = message
 
     def autojoin(self):
+        """
+        Join the first non-full room
+        """
         message = json.dumps({"action": "autojoin",
                               "identifier": self.identifier})
         self.sock_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -61,6 +73,9 @@ class Client:
         self.room_id = message
 
     def leave_room(self):
+        """
+        Leave the current room
+        """
         message = json.dumps({"action": "leave",
                               "room_id": self.room_id,
                               "identifier": self.identifier})
@@ -72,6 +87,9 @@ class Client:
         message = self.parse_data(data)
 
     def get_rooms(self):
+        """
+        Get the list of remote rooms
+        """
         message = json.dumps({"action": "get_rooms",
                               "identifier": self.identifier})
         self.sock_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -83,6 +101,9 @@ class Client:
         return message
 
     def send(self, message):
+        """
+        Send data to all players in the same room
+        """
         message = json.dumps({"action": "send",
                               "payload": {"message": message},
                               "room_id": self.room_id,
@@ -91,6 +112,9 @@ class Client:
         sock.sendto(message, self.server_udp)
 
     def sendto(self, recipients, message):
+        """
+        Send data to one or more player in room
+        """
         message = json.dumps({"action": "sendto",
                               "payload": {"recipients": recipients,
                                           "message": message},
@@ -100,6 +124,9 @@ class Client:
         sock.sendto(message, self.server_udp)
 
     def register(self):
+        """
+        Register the client to server and get a uniq identifier
+        """
         message = json.dumps({"action": "register",
                               "payload": self.client_udp[1]})
         self.sock_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -111,6 +138,9 @@ class Client:
         self.identifier = message
 
     def parse_data(self, data):
+        """
+        Parse response from server
+        """
         try:
             data = json.loads(data)
             if data['success'] == "True":
@@ -121,6 +151,9 @@ class Client:
             print data
 
     def get_messages(self):
+        """
+        Get recieved messages from server
+        """
         message = self.server_message
         self.server_message = []
         return set(message)
@@ -128,6 +161,9 @@ class Client:
 
 class SocketThread(threading.Thread):
     def __init__(self, addr, client, lock):
+        """
+        Client udp connection
+        """
         threading.Thread.__init__(self)
         self.client = client
         self.lock = lock
@@ -135,6 +171,9 @@ class SocketThread(threading.Thread):
         self.sock.bind(addr)
 
     def run(self):
+        """
+        Get responses from server
+        """
         while True:
             data, addr = self.sock.recvfrom(1024)
             self.lock.acquire()
@@ -144,11 +183,16 @@ class SocketThread(threading.Thread):
                 self.lock.release()
 
     def stop(self):
+        """
+        Stop thread
+        """
         pass
 
 
 if __name__ == "__main__":
-
+    """
+    Example with 3 clients
+    """
     #  Register on server
     client1 = Client("127.0.0.1", 1234, 1234, 1235)
     client2 = Client("127.0.0.1", 1234, 1234, 1236)
