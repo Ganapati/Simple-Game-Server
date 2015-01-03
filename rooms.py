@@ -67,7 +67,7 @@ class Rooms:
             if self.rooms[room_id].is_empty():
                 del self.rooms[room_id]
 
-    def broadcast(self, identifier, room_id, payload, sock):
+    def send(self, identifier, room_id, message, sock):
         if room_id not in self.rooms:
             raise RoomNotFound()
 
@@ -77,7 +77,22 @@ class Rooms:
 
         for player in room.players:
             if player.identifier != identifier:
-                player.send_udp(identifier, payload)
+                player.send_udp(identifier, message)
+
+    def sendto(self, identifier, room_id, recipients, message, sock):
+        if room_id not in self.rooms:
+            raise RoomNotFound()
+
+        room = self.rooms[room_id]
+        if not room.is_in_room(identifier):
+            raise NotInRoom()
+
+        if isinstance(recipients, basestring):
+            recipients = [recipients]
+
+        for player in room.players:
+            if player.identifier in recipients:
+                player.send_udp(identifier, message)
 
 
 class Room:

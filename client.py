@@ -82,9 +82,18 @@ class Client:
         message = self.parse_data(data)
         return message
 
-    def broadcast(self, message):
-        message = json.dumps({"action": "broadcast",
-                              "payload": message,
+    def send(self, message):
+        message = json.dumps({"action": "send",
+                              "payload": {"message": message},
+                              "room_id": self.room_id,
+                              "identifier": self.identifier})
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.sendto(message, self.server_udp)
+
+    def sendto(self, recipients, message):
+        message = json.dumps({"action": "sendto",
+                              "payload": {"recipients": recipients,
+                                          "message": message},
                               "room_id": self.room_id,
                               "identifier": self.identifier})
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -180,12 +189,12 @@ if __name__ == "__main__":
     #  Main game loop
     while True:
         #  Send message to room (any serializable data)
-        client1.broadcast({"name": "John D.",
-                           "message": "I'm just John Doe..."})
-        client2.broadcast({"name": "Linus T.",
-                           "message": "My name is Linus, and I am your God."})
-        client3.broadcast({"name": "Richard S.",
-                           "message": "I love emacs"})
+        client1.send({"name": "John D.",
+                      "message": "I'm just John Doe..."})
+        client2.send({"name": "Linus T.",
+                      "message": "My name is Linus, and I am your God."})
+        client3.send({"name": "Richard S.",
+                      "message": "I love emacs"})
 
         # get server data (only client 3)
         message = client1.get_messages()

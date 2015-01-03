@@ -48,14 +48,26 @@ class UdpServer(Thread):
                     payload = None
 
                 try:
+                    action = data['action']
+                except KeyError:
+                    action = None
+
+                try:
                     if room_id not in self.rooms.rooms.keys():
                         raise RoomNotFound
                     self.lock.acquire()
                     try:
-                        self.rooms.broadcast(identifier,
-                                             room_id,
-                                             payload,
-                                             sock)
+                        if action == "send":
+                            self.rooms.send(identifier,
+                                            room_id,
+                                            payload['message'],
+                                            sock)
+                        elif action == "sendto":
+                            self.rooms.sendto(identifier,
+                                              room_id,
+                                              payload['recipients'],
+                                              payload['message'],
+                                              sock)
                     finally:
                         self.lock.release()
                 except RoomNotFound:
