@@ -22,9 +22,17 @@ Launch client.py :
 
 How to add multiplayer in your games
 ------------------------------------
+Start server :
+
+```python
+user@server >>> ./server.py
+```
+
+In the client code :
+
 ```python
 # Add Client instance to your game
-client = Client(server_host, server_tcp_port, server_udp_port, client_udp_port)
+client = Client(server_host, 1234, 1234, 1235)
 
 # Get room list (room_id, nb_players, capacity)
 rooms = client.get_rooms()
@@ -32,6 +40,7 @@ rooms = client.get_rooms()
 # You can join a room using room identifier (ex: first room)
 client.join(rooms[0]["id"])
 
+# You can autojoin the first available room client.autojoin()
 # Or you can create a new room with client.create_room("room_name")
 
 # In your game main loop
@@ -47,7 +56,7 @@ while game_is_running:
     client.sendto(players_ids, any_serializable_data)
 
     # Read received messages
-    messages = client.get_signal()
+    messages = client.get_messages()
     if len(messages) != 0:
         for message in message:
             do_something_with_message(message)
