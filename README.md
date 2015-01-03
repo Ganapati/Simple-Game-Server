@@ -7,7 +7,7 @@ A very simple client/server library for multiplayer python games
    - Create/join/leave room
    - List rooms and capacity (ex: room1 2/10 players)
    - Autojoin the first non-full room
- - UDP for broadcasting data to all players in the same room
+ - UDP for broadcasting data to other players
 
 Quickstart and demo
 -------------------
