@@ -31,16 +31,18 @@ def main_loop(tcp_port, udp_port, rooms):
         if cmd == "list":
             print "Rooms :"
             for room_id, room in rooms.rooms.iteritems():
-                print "%s (%d/%d)" % (room.identifier,
-                                      len(room.players),
-                                      room.capacity)
+                print "%s - %s (%d/%d)" % (room.identifier,
+                                           room.name,
+                                           len(room.players),
+                                           room.capacity)
         elif cmd.startswith("room "):
             try:
                 id = cmd[5:]
                 room = rooms.rooms[id]
-                print "%s (%d/%d)" % (room.identifier,
-                                      len(room.players),
-                                      room.capacity)
+                print "%s - %s (%d/%d)" % (room.identifier,
+                                           room.name,
+                                           len(room.players),
+                                           room.capacity)
                 print "Players :"
                 for player in room.players:
                     print player.identifier

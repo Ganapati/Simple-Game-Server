@@ -69,7 +69,7 @@ Each received message is given with remote player identifier.
 Server commands
 ---------------
 
-list : list server rooms
-room #id : show informations about room
-user #id : show informations about player
-quit : quit server
+ * list : list server rooms
+ * room #id : show informations about room
+ * user #id : show informations about player
+ * quit : quit server
