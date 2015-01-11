@@ -30,6 +30,8 @@ user@server >>> ./python server.py --tcpport 1234 --udpport 1234 --capacity 10
 
 In the client code :
 
+Only add the client.py file to your project
+
 ```python
 # Add Client instance to your game
 client = Client("127.0.0.1", 1234, 1234, 1235)
