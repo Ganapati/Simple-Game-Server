@@ -12,7 +12,7 @@ A very simple client/server library for multiplayer python games
 Quickstart and demo
 -------------------
 Launch server.py on your server :
- - ./python server.py --tcpport 1234 --udpport 1234 --capacity 10
+ - ./python server.py --tcpport 1234 --udpport 1234 --capacity 3
    - --udpport udp port to listen
    - --tcpport tcp port to listen
    - --capacity maximum players per room
@@ -65,3 +65,11 @@ while game_is_running:
             do_something_with_message(message)
 ```
 Each received message is given with remote player identifier.
+
+Server commands
+---------------
+
+list : list server rooms
+room #id : show informations about room
+user #id : show informations about player
+quit : quit server
