@@ -17,6 +17,51 @@ def main_loop(tcp_port, udp_port, rooms):
     tcp_server = TcpServer(tcp_port, rooms, lock)
     udp_server.start()
     tcp_server.start()
+    is_running = True
+    print "Simple Game Server."
+    print "--------------------------------------"
+    print "list : list rooms"
+    print "room #room_id : print room information"
+    print "user #user_id : print user information"
+    print "quit : quit server"
+    print "--------------------------------------"
+
+    while is_running:
+        cmd = raw_input("cmd >")
+        if cmd == "list":
+            print "Rooms :"
+            for room_id, room in rooms.rooms.iteritems():
+                print "%s (%d/%d)" % (room.identifier,
+                                      len(room.players),
+                                      room.capacity)
+        elif cmd.startswith("room "):
+            try:
+                id = cmd[5:]
+                room = rooms.rooms[id]
+                print "%s (%d/%d)" % (room.identifier,
+                                      len(room.players),
+                                      room.capacity)
+                print "Players :"
+                for player in room.players:
+                    print player.identifier
+            except:
+                print "Error while getting room informations"
+        elif cmd.startswith("user "):
+            try:
+                player = rooms.players[cmd[5:]]
+                print "%s : %s:%d" % (player.identifier,
+                                      player.udp_addr[0],
+                                      player.udp_addr[1])
+            except:
+                print "Error while getting user informations"
+        elif cmd == "quit":
+            print "Shutting down  server..."
+            udp_server.is_listening = False
+            tcp_server.is_listening = False
+            is_running = False
+
+    udp_server.join()
+    tcp_server.join()
 
 
 class UdpServer(Thread):
@@ -27,6 +72,7 @@ class UdpServer(Thread):
         Thread.__init__(self)
         self.rooms = rooms
         self.lock = lock
+        self.is_listening = True
         self.udp_port = int(udp_port)
         self.msg = '{"success": %(success)s, "message":"%(message)s"}'
 
@@ -34,11 +80,17 @@ class UdpServer(Thread):
         """
         Start udp server
         """
-        sock = socket.socket(socket.AF_INET,
-                             socket.SOCK_DGRAM)
-        sock.bind(("0.0.0.0", self.udp_port))
-        while True:
-            data, addr = sock.recvfrom(1024)
+        self.sock = socket.socket(socket.AF_INET,
+                                  socket.SOCK_DGRAM)
+        self.sock.bind(("0.0.0.0", self.udp_port))
+        self.sock.setblocking(0)
+        self.sock.settimeout(5)
+        while self.is_listening:
+            try:
+                data, addr = self.sock.recvfrom(1024)
+            except socket.timeout:
+                continue
+
             try:
                 data = json.loads(data)
                 try:
@@ -67,16 +119,22 @@ class UdpServer(Thread):
                     self.lock.acquire()
                     try:
                         if action == "send":
-                            self.rooms.send(identifier,
-                                            room_id,
-                                            payload['message'],
-                                            sock)
+                            try:
+                                self.rooms.send(identifier,
+                                                room_id,
+                                                payload['message'],
+                                                self.sock)
+                            except:
+                                pass
                         elif action == "sendto":
-                            self.rooms.sendto(identifier,
-                                              room_id,
-                                              payload['recipients'],
-                                              payload['message'],
-                                              sock)
+                            try:
+                                self.rooms.sendto(identifier,
+                                                  room_id,
+                                                  payload['recipients'],
+                                                  payload['message'],
+                                                  self.sock)
+                            except:
+                                pass
                     finally:
                         self.lock.release()
                 except RoomNotFound:
@@ -85,13 +143,15 @@ class UdpServer(Thread):
             except KeyError:
                 print "Json from %s:%s is not valid" % addr
             except ValueError:
-                print "Message from %s:%s is not a valid json string" % addr
+                print "Message from %s:%s is not valid json string" % addr
+
+        self.stop()
 
     def stop(self):
         """
         Stop server
         """
-        pass
+        self.sock.close()
 
 
 class TcpServer(Thread):
@@ -103,26 +163,32 @@ class TcpServer(Thread):
         self.lock = lock
         self.tcp_port = int(tcp_port)
         self.rooms = rooms
+        self.is_listening = True
         self.msg = '{"success": "%(success)s", "message":"%(message)s"}'
 
     def run(self):
         """
         Start tcp server
         """
-        sock = socket.socket(socket.AF_INET,
-                             socket.SOCK_STREAM)
-        sock.bind(('0.0.0.0', self.tcp_port))
+        self.sock = socket.socket(socket.AF_INET,
+                                  socket.SOCK_STREAM)
+        self.sock.bind(('0.0.0.0', self.tcp_port))
+        self.sock.setblocking(0)
+        self.sock.settimeout(5)
         time_reference = time.time()
-        sock.listen(1)
+        self.sock.listen(1)
 
-        while True:
+        while self.is_listening:
 
             #  Clean empty rooms
             if time_reference + 60 < time.time():
                 self.rooms.remove_empty()
                 time_reference = time.time()
+            try:
+                conn, addr = self.sock.accept()
+            except socket.timeout:
+                continue
 
-            conn, addr = sock.accept()
             data = conn.recv(1024)
             try:
                 data = json.loads(data)
@@ -158,10 +224,12 @@ class TcpServer(Thread):
                 print "Json from %s:%s is not valid" % addr
                 conn.send("Json is not valid")
             except ValueError:
-                print "Message from %s:%s is not a valid json string" % addr
+                print "Message from %s:%s is not valid json string" % addr
                 conn.send("Message is not a valid json string")
 
             conn.close()
+
+        self.stop()
 
     def route(self,
               sock,
@@ -233,7 +301,7 @@ class TcpServer(Thread):
         """
         Stop tcp data
         """
-        pass
+        self.sock.close()
 
 
 if __name__ == "__main__":

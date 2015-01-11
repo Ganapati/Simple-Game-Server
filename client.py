@@ -186,7 +186,7 @@ class SocketThread(threading.Thread):
         """
         Stop thread
         """
-        pass
+        self.sock.close()
 
 
 if __name__ == "__main__":
