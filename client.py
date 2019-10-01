@@ -31,12 +31,10 @@ class Client:
         """
         Create a new room on server
         """
-        message = json.dumps({"action": "create",
-                              "payload": room_name,
-                              "identifier": self.identifier})
+        message = json.dumps({"action": "create", "payload": room_name, "identifier": self.identifier})
         self.sock_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock_tcp.connect(self.server_tcp)
-        self.sock_tcp.send(message)
+        self.sock_tcp.send(message.encode())
         data = self.sock_tcp.recv(1024)
         self.sock_tcp.close()
         message = self.parse_data(data)
@@ -47,12 +45,10 @@ class Client:
         Join an existing room
         """
         self.room_id = room_id
-        message = json.dumps({"action": "join",
-                              "payload": room_id,
-                              "identifier": self.identifier})
+        message = json.dumps({"action": "join", "payload": room_id, "identifier": self.identifier})
         self.sock_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock_tcp.connect(self.server_tcp)
-        self.sock_tcp.send(message)
+        self.sock_tcp.send(message.encode())
         data = self.sock_tcp.recv(1024)
         self.sock_tcp.close()
         message = self.parse_data(data)
@@ -62,8 +58,7 @@ class Client:
         """
         Join the first non-full room
         """
-        message = json.dumps({"action": "autojoin",
-                              "identifier": self.identifier})
+        message = json.dumps({"action": "autojoin", "identifier": self.identifier})
         self.sock_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock_tcp.connect(self.server_tcp)
         self.sock_tcp.send(message)
@@ -76,9 +71,11 @@ class Client:
         """
         Leave the current room
         """
-        message = json.dumps({"action": "leave",
-                              "room_id": self.room_id,
-                              "identifier": self.identifier})
+        message = json.dumps({
+            "action": "leave",
+            "room_id": self.room_id,
+            "identifier": self.identifier
+        })
         self.sock_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock_tcp.connect(self.server_tcp)
         self.sock_tcp.send(message)
@@ -90,11 +87,10 @@ class Client:
         """
         Get the list of remote rooms
         """
-        message = json.dumps({"action": "get_rooms",
-                              "identifier": self.identifier})
+        message = json.dumps({"action": "get_rooms", "identifier": self.identifier})
         self.sock_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock_tcp.connect(self.server_tcp)
-        self.sock_tcp.send(message)
+        self.sock_tcp.send(message.encode())
         data = self.sock_tcp.recv(1024)
         self.sock_tcp.close()
         message = self.parse_data(data)
@@ -104,22 +100,28 @@ class Client:
         """
         Send data to all players in the same room
         """
-        message = json.dumps({"action": "send",
-                              "payload": {"message": message},
-                              "room_id": self.room_id,
-                              "identifier": self.identifier})
+        message = json.dumps({
+            "action": "send",
+            "payload": {"message": message},
+            "room_id": self.room_id,
+            "identifier": self.identifier
+        })
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.sendto(message, self.server_udp)
+        sock.sendto(message.encode(), self.server_udp)
 
     def sendto(self, recipients, message):
         """
         Send data to one or more player in room
         """
-        message = json.dumps({"action": "sendto",
-                              "payload": {"recipients": recipients,
-                                          "message": message},
-                              "room_id": self.room_id,
-                              "identifier": self.identifier})
+        message = json.dumps({
+            "action": "sendto",
+            "payload": {
+                "recipients": recipients,
+                "message": message
+            },
+            "room_id": self.room_id,
+            "identifier": self.identifier
+        })
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.sendto(message, self.server_udp)
 
@@ -127,11 +129,13 @@ class Client:
         """
         Register the client to server and get a uniq identifier
         """
-        message = json.dumps({"action": "register",
-                              "payload": self.client_udp[1]})
+        message = json.dumps({
+            "action": "register",
+            "payload": self.client_udp[1]
+        })
         self.sock_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock_tcp.connect(self.server_tcp)
-        self.sock_tcp.send(message)
+        self.sock_tcp.send(message.encode())
         data = self.sock_tcp.recv(1024)
         self.sock_tcp.close()
         message = self.parse_data(data)
@@ -148,7 +152,7 @@ class Client:
             else:
                 raise Exception(data['message'])
         except ValueError:
-            print data
+            print(data)
 
     def get_messages(self):
         """
@@ -198,37 +202,35 @@ if __name__ == "__main__":
     client2 = Client("127.0.0.1", 1234, 1234, 1236)
     client3 = Client("127.0.0.1", 1234, 1234, 1237)
 
-    print "Client 1 : %s" % client1.identifier
-    print "Client 2 : %s" % client2.identifier
-    print "Client 3 : %s" % client3.identifier
+    print("Client 1 : %s" % client1.identifier)
+    print("Client 2 : %s" % client2.identifier)
+    print("Client 3 : %s" % client3.identifier)
 
     #  Create a room on server
     client1.create_room("Test room")
-    print "Client1 create room  %s" % client1.room_id
+    print("Client1 create room  %s" % client1.room_id)
 
     #  Get rooms list
     rooms = client1.get_rooms()
     selected_room = None
     if rooms is not None and len(rooms) != 0:
         for room in rooms:
-            print "Room %s (%d/%d)" % (room["name"],
-                                       int(room["nb_players"]),
-                                       int(room["capacity"]))
+            print("Room %s (%d/%d)" % (room["name"], int(room["nb_players"]), int(room["capacity"])))
 
         # Get first room for tests
         selected_room = rooms[0]['id']
     else:
-        print "No rooms"
+        print("No rooms")
 
     #  Join client 1 room
     try:
         client2.join_room(selected_room)
         client3.join_room(selected_room)
     except Exception as e:
-        print "Error : %s" % str(e)
+        print("Error : %s" % str(e))
 
-    print "Client 2 join %s" % client2.room_id
-    print "Client 3 join %s" % client3.room_id
+    print("Client 2 join %s" % client2.room_id)
+    print("Client 3 join %s" % client3.room_id)
 
     #  Main game loop
     while True:
@@ -246,4 +248,4 @@ if __name__ == "__main__":
             for message in message:
                 message = json.loads(message)
                 sender, value = message.popitem()
-                print "%s say %s" % (value["name"], value["message"])
+                print("%s say %s" % (value["name"], value["message"]))

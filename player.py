@@ -20,9 +20,8 @@ class Player:
         success_string = "False"
         if success:
             success_string = "True"
-        message = json.dumps({"success": success_string,
-                              "message": data})
-        sock.send(message)
+        message = json.dumps({"success": success_string, "message": data})
+        sock.send(message.encode())
 
     def send_udp(self, player_identifier, message):
         """
