@@ -39,9 +39,16 @@ class Rooms:
         player = self.players[player_identifier]
 
         if room_id is None:
-            room_id = self.create_room()
+            for room_id in self.rooms.keys():
+                if not self.rooms[room_id].is_full():
+                    self.rooms[room_id].players.append(player)
+                    return room_id
+                    break
+            room_id = self.create()
+            self.join(player_identifier, room_id)
+            return room_id
 
-        if room_id in self.rooms:
+        elif room_id in self.rooms:
             if not self.rooms[room_id].is_full():
                 self.rooms[room_id].players.append(player)
                 return room_id
@@ -107,10 +114,10 @@ class Rooms:
         room = self.rooms[room_id]
         if not room.is_in_room(identifier):
             raise NotInRoom()
-
-        if isinstance(recipients, basestring):
+   
+        if isinstance(recipients, str):
             recipients = [recipients]
-
+            
         for player in room.players:
             if player.identifier in recipients:
                 player.send_udp(identifier, message)

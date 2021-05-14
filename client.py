@@ -61,7 +61,7 @@ class Client:
         message = json.dumps({"action": "autojoin", "identifier": self.identifier})
         self.sock_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock_tcp.connect(self.server_tcp)
-        self.sock_tcp.send(message)
+        self.sock_tcp.send(message.encode())
         data = self.sock_tcp.recv(1024)
         self.sock_tcp.close()
         message = self.parse_data(data)
@@ -78,7 +78,7 @@ class Client:
         })
         self.sock_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock_tcp.connect(self.server_tcp)
-        self.sock_tcp.send(message)
+        self.sock_tcp.send(message.encode())
         data = self.sock_tcp.recv(1024)
         self.sock_tcp.close()
         message = self.parse_data(data)
@@ -123,7 +123,7 @@ class Client:
             "identifier": self.identifier
         })
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.sendto(message, self.server_udp)
+        sock.sendto(message.encode(), self.server_udp)
 
     def register(self):
         """
@@ -225,7 +225,7 @@ if __name__ == "__main__":
     #  Join client 1 room
     try:
         client2.join_room(selected_room)
-        client3.join_room(selected_room)
+        client3.autojoin()
     except Exception as e:
         print("Error : %s" % str(e))
 
@@ -237,7 +237,7 @@ if __name__ == "__main__":
         #  Send message to room (any serializable data)
         client1.send({"name": "John D.",
                       "message": "I'm just John Doe..."})
-        client2.send({"name": "Linus T.",
+        client2.sendto(client1.identifier, {"name": "Linus T.",
                       "message": "My name is Linus, and I am your God."})
         client3.send({"name": "Richard S.",
                       "message": "I love emacs"})
@@ -249,3 +249,4 @@ if __name__ == "__main__":
                 message = json.loads(message)
                 sender, value = message.popitem()
                 print("%s say %s" % (value["name"], value["message"]))
+
