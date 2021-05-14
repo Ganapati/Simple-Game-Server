@@ -85,7 +85,7 @@ class Rooms:
         """
         Delete empty rooms
         """
-        for room_id in self.rooms.keys():
+        for room_id in list(self.rooms.keys()):
             if self.rooms[room_id].is_empty():
                 del self.rooms[room_id]
 
