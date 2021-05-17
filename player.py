@@ -28,4 +28,4 @@ class Player:
         Send udp packet to player (game logic interaction)
         """
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.sendto(json.dumps({player_identifier: message}), self.udp_addr)
+        sock.sendto(json.dumps({player_identifier: message}).encode(), self.udp_addr)

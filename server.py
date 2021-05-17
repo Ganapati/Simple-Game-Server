@@ -286,7 +286,7 @@ class TcpServer(Thread):
                 try:
                     if room_id not in self.rooms.rooms:
                         raise RoomNotFound()
-                    rooms.leave(identifier, room_id)
+                    self.rooms.leave(identifier, room_id)
                     client.send_tcp(True, room_id, sock)
                 except RoomNotFound:
                     client.send_tcp(False, room_id, sock)
@@ -319,7 +319,7 @@ if __name__ == "__main__":
     parser.add_argument('--capacity',
                         dest='room_capacity',
                         help='Max players per room',
-                        default="2")
+                        default="3")
 
     args = parser.parse_args()
     rooms = Rooms(int(args.room_capacity))
